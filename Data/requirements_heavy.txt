@@ -1,0 +1,11 @@
+deep-translator
+PyQt5
+mss
+screeninfo
+requests
+flask
+flask-cors
+language-tool-python
+easyocr
+Pillow
+numpy
