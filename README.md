@@ -1,99 +1,103 @@
-## Subtitles Translator
+# Subtitles Translator
 
-&nbsp;&nbsp;&nbsp;&nbsp;The idea came to me when I started to learn french this summer. In school I had enough hours to make me a B2 (500h), but the reality was different (I was A0). To learn a new language
-you need first to consume it. So what's the best way to consume content ? Of course while watching a movie. In plus, each unknown word by the user, will be explaied, if it's hovered.          
-&nbsp;&nbsp;&nbsp;&nbsp;Because many people don't know english in our country especially middle-aged people who have learnt russian at school. I've decided with my team to make a website/app 
-to make learning english fun. So, therefore momentarly will only translate english to romanian for this project. (It can be easily swithed de language to translete to.). For the subttitles translater to work in `fullscreen`, press fn + f12. Don't forget that you can get the definiton of an unknown word by hovering it.
-&nbsp;&nbsp;&nbsp;&nbsp;So, i've implemented a `chrome` extension for all movie sites. In the tutorial at the end I use brave.       
-I suggest trying it on netflix or https://xprime.stream/ (here you can set the subtitles size and position to aligned in the specific area from the screenshot).                    
-!Disclaimer: in setup.sh you can choose between a light variant (it needs tesseract installed on the computer to work) and a more accurate one made with easy.ocr.        
-If run.sh and interface.py don't work try with app.py.        
-Remember to have the `server on` for the extension to work. 
-!
-### Getting the subtittle text
-To implement this, first things first we need the text.
+A Chrome extension with a Python backend that reads the subtitles from any movie site, translates them in real time and explains every unknown word when you hover over it.
 
-&nbsp;&nbsp;&nbsp;&nbsp;I've considered some paths do to this.
+## Motivation
 
-I) Get the movie name and download the subtitles text.      
-    - Pros: Efficient       
-    - Cons: Needs to sync with the time from the player, netflix doesn't let you to have acces to its player
+The idea came to me when I started learning French this summer. To learn a language you first need to consume it, and the best way to do that is by watching movies. Each word you don't know gets explained when you hover over it.
 
-II) Get directly the subtitles from the player      
-    - Pros: - easy to do for only one site that let's you to acces its player      
-    - Cons: - netflix doesn't let you to have acces to its player      
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- it would be specific for each site        
+Many people in Romania don't speak English, especially middle-aged people who learned Russian at school. I wanted to make learning English fun for them too, so for now the project translates from English to Romanian. The target language can be changed easily.
 
-III) Screenshooting a select portion        
-    - Pros: - can work with any site        
-    - Cons - harder to implement        
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- consuming a lot of resources
+## Quick start
 
-&nbsp;&nbsp;&nbsp;&nbsp;I've chosen the third option, I want to watch a movie even if it's not on Netflix, and I don't want to spend 20$ just a subscription. So, yeah, piracy time.
-### 2. Implementation (Python backend)
-So, the follwing functions from background made the possible the third choice.
+- I built a Chrome extension that works on all movie sites. The tutorial below uses Brave.
+- Try it on Netflix or on https://xprime.stream/ (there you can set the subtitle size and position so they line up with the captured area from the screenshot).
+- For the translator to work in `fullscreen`, press `fn + F12`.
+- In `setup.sh` you can choose between a **light variant** (needs Tesseract installed on the computer) and a **more accurate variant** (EasyOCR).
+- If `run.sh` and `interface.py` don't work, try `app.py`.
+- The **server must be on** for the extension to work.
 
-`
-doText.py
-`
-- make a screenshot to a specific area common for subtitles
-- it uses the main monitor in case if the user has multiple monitors
+## 1. Getting the subtitle text
 
-`
-analyzeImage.py
-`
-- analyze the screeshot
-- It has 2 variants:
-#### Variant 1:
-- it uses easyOCR, but it will consume larger resources, 8gb of free storage and it takes a longer time to install, but it will be very `accurate`
-#### Variant 2:
-- it uses pytesseract, it's far lighter, but it is not as good (the text extracted won't be as good)
+The first step is getting the text. I considered three approaches:
 
-`
-translateText.py
-`
-- the gem of this part of the project
-- I've considered Translator from translate (it has a daily number of uses their api)
-- In the end I've remained with deep_translator from GoogleTranslate, which is free and good enough.
+**I) Download the subtitles using the movie name**
+- Pros: efficient
+- Cons: needs to be synced with the player time; Netflix doesn't give access to its player
 
-Problems:
-- First i used pytessract but it wasn't the best OCR, so i've switched to easyOCR. But it consumes a lot of resources, so i made the choice for the user to choose what variant to use.
-- Screenshots? Because all is processed locally, the user's screenshot won't be shared with anyone
+**II) Read the subtitles directly from the player**
+- Pros: easy to do for a single site that gives access to its player
+- Cons: Netflix doesn't give access to its player; it would have to be built separately for each site
 
-- Now, that we have the screenshots, I've wanted to implement hovering over words to give their meaning. At first glance, I've considered multiple hitboxex
-(one hitbox per word), which was very hard. Then to make the logic easier, I've considered one big hitbox per line, and each word has its length so occupies a certain procentage of
-the line length's. So I've divided the line into multiple mini hitboxes this way.
+**III) Take a screenshot of a selected area**
+- Pros: works on any site
+- Cons: harder to implement; uses a lot of resources
 
-&nbsp;&nbsp;&nbsp;&nbsp;To not forget the words hovered, the user at the end of the session will get the words collected in the database with their meaning.
+I chose the third option because I wanted it to work everywhere, including on sites that don't expose their player and without depending on any particular streaming service.
 
-### 3. Implementation (javascript frontend)
-- it get the information with the help of `app.py`, which start the server and offer information
-- it stops everything when the extension is set to OFF
-- updateSubtitle() -> get's the information via background.js, after that it shows the text in subtitleDiv
-- fetchDefinition() -> get's the definiton of the word via background.js
+## 2. Implementation (Python backend)
 
-Tutorial:       
-&nbsp;&nbsp;&nbsp;&nbsp;If it doens't work try to reload the page, check if the server or extesion is on and disable the adblocker. The starting of the server can be slow.
-- I) Add the extension
-    - activate developer mode in the settings of extension, it is found in `Data/Extension`              
-![Developer mode & load unpacked](Tutorialmages/1.png)     
-    - click on load unpacked and navigate to the extension's path and add it
-![Path](Tutorialmages/path.png)     
-    - pin it to easily deactivate/activate later         
-- II) Run setup.sh to choose the variant, then run 'run.sh'
-    - click start server, it will allow to processed the data in python 
-    (backend)           
-![Demo from hotel Transylavania](Tutorialmages/3.png)       
-- III) Stop the server
-    - when done with watching movies while learning a new language ;)
-    - click stop server, it imediatly stops the local server and it will give a list of the words you hovered
+The following modules make the third option possible.
 
-![Hovered unknown words](Tutorialmages/4.png)       
+**`doText.py`**
+- Takes a screenshot of the area where subtitles usually appear.
+- Uses the main monitor if the user has several.
 
-&nbsp;&nbsp;&nbsp;&nbsp;In the end, it was a project that I've enjoyed working on it. I've gave up this
-idea in the summer, thinking it was too hard.
+**`analyzeImage.py`**
+- Analyzes the screenshot and extracts the text. It has two variants:
+  - **Variant 1, EasyOCR:** very accurate, but it needs more resources (about 8 GB of free storage) and takes longer to install.
+  - **Variant 2, pytesseract:** much lighter, but the extracted text is less accurate.
 
-### Future plans for this project:
-- to translate to all the languages
-- to train a ML for the english version
-- to add a better/fancy (eye-candy) interface
+**`translateText.py`**
+- I first considered the `translate` package, but its API has a daily usage limit.
+- I settled on `deep_translator` with Google Translate, which is free and good enough.
+
+### Problems and decisions
+
+- **OCR quality vs. resources:** I started with pytesseract, but it wasn't accurate enough, so I switched to EasyOCR. Because EasyOCR is heavy, I let the user choose which variant to install.
+- **Privacy:** everything is processed locally, so the screenshots are never shared with anyone.
+- **Hover hitboxes:** to show a word's meaning on hover, I first tried one hitbox per word, which turned out to be very hard. I simplified it to one large hitbox per line and divided it into smaller ones, giving each word a share of the line proportional to its length.
+- **Vocabulary list:** so you don't forget the words you hovered over, at the end of the session you get a list of them with their meanings, saved in a database.
+
+## 3. Implementation (JavaScript frontend)
+
+- It gets its data from `app.py`, which starts the server and provides the information.
+- Everything stops when the extension is switched OFF.
+- `updateSubtitle()` gets the data through `background.js`, then shows the text in `subtitleDiv`.
+- `fetchDefinition()` gets the definition of a word through `background.js`.
+
+## Tutorial
+
+If it doesn't work, reload the page, check that the server and the extension are on, and disable your adblocker. The server can be slow to start.
+
+**I) Add the extension**
+1. Turn on developer mode in the extension settings (found under `Data/Extension`).
+
+   ![Developer mode & load unpacked](Tutorialmages/1.png)
+
+2. Click **Load unpacked**, go to the extension's folder and add it.
+
+   ![Path](Tutorialmages/path.png)
+
+3. Pin the extension so you can easily turn it on and off later.
+
+**II) Run the backend**
+1. Run `setup.sh` to choose the OCR variant, then run `run.sh`.
+2. Click **Start server**. This lets the Python backend process the data.
+
+   ![Demo from Hotel Transylvania](Tutorialmages/3.png)
+
+**III) Stop the server**
+1. When you finish watching, click **Stop server**. The local server stops immediately and you get the list of words you hovered over.
+
+   ![Hovered unknown words](Tutorialmages/4.png)
+
+## Final notes
+
+I really enjoyed working on this project. I had given up on the idea during the summer because I thought it was too hard.
+
+## Future plans
+
+- Support translation into more languages
+- Train an ML model for the English version
+- Build a better-looking interface
